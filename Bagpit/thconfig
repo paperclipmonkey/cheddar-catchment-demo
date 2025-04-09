@@ -6,15 +6,12 @@ select BagpitPM@Bagpit -map-level 1
 
 
 #Order of export is important for the combined output
-export map  -layout elevation -proj [elevation 320] -o BagpitE320.pdf
-export model -o Bagpitth.3d
-export map -layout plan -o BagpitP.pdf
-export map -layout combined -proj [elevation 320] -o Bagpit.pdf
-export map  -layout local -proj [elevation 230] -o BonePasageE230.pdf
-
-
-
-export model -cs EPSG:27700 -fmt esri -output BagpitModel.shp
+export map  -layout elevation -proj [elevation 320] -o output/BagpitE320.pdf
+export model -o output/Bagpitth.3d
+export map -layout plan -o output/BagpitP.pdf
+export map -layout combined -proj [elevation 320] -o output/Bagpit.pdf
+export map  -layout local -proj [elevation 230] -o output/BonePasageE230.pdf
+export model -cs EPSG:27700 -fmt esri -output output/BagpitModel.shp
 
 layout GIS
 cs EPSG:27700
