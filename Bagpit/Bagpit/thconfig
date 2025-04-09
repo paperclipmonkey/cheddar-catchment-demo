@@ -1,0 +1,23 @@
+encoding  utf-8
+source "Bagpit.th"
+
+select BagpitM@Bagpit
+
+
+export model -o Bagpitth.3d
+
+export map -proj plan -layout local -o "BagpitP.pdf"
+
+#export map -proj extended -layout local -o "Bagpit-ee.pdf"
+export map -layout local -proj [elevation 320] -o BagpitE320.pdf
+
+
+layout local
+copy common
+scale 1 140
+symbol-hide group centreline
+statistics explo off
+#transparency off
+endlayout
+
+input ../../common_layout.th

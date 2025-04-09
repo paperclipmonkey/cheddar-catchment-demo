@@ -1,0 +1,10 @@
+encoding  utf-8
+
+source "SlabChamber.th"
+
+export model -o "SlabChamber.3d"
+
+# export map -proj plan -layout local -o "SlabChamberP.pdf"
+
+# export map -proj extended -layout local -o "SlabChamber-ee.pdf"
+export map -layout local -proj [elevation 320] -o SlabChamberE320.pdf

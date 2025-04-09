@@ -1,0 +1,19 @@
+encoding  utf-8
+
+layout local
+  debug off
+  map-header 0 0 off
+  # symbol-hide group cave-centreline
+endlayout
+
+source "MemoryLane.th"
+
+export model -fmt survex -o "MemoryLane-th.3d"
+
+#export map -proj [elevation 230] -o MemoryLaneE230.xvi
+export map -proj [elevation 230]  -layout local -o MemoryLaneE230.pdf
+
+#export map -proj plan -layout local -o "MemoryLaneP.pdf"
+
+# export map -proj extended -layout local -o "MemoryLane-ee.pdf"
+export map -proj [elevation 320] -o MemoryLaneE320.pdf

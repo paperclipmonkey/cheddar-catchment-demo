@@ -1,0 +1,81 @@
+encoding  utf-8
+survey Bagpit
+
+input Bagpit/Bagpit.th
+input "SlabChamber/SlabChamber.th"
+input "NextDoor/NextDoor.th"
+input "MemoryLane/MemoryLane.th"
+
+map BagpitPM
+  BagpitPM1
+  BagpitPM2
+  NextDoorM@NextDoor
+endmap
+
+map BagpitPM1
+ #BagpitSP1@Bagpit
+ BagpitSP2@Bagpit
+break
+ BagpitSP3@Bagpit
+ BagpitSP4@Bagpit
+ MemoryLaneSP1@MemoryLane
+endmap
+
+map BagpitPM2
+ BagpitSP5@Bagpit
+ SlabChamberSP1@SlabChamber
+endmap
+
+##################################################
+map BagpitE320M
+  BagpitE320M1
+  BagpitE320M2
+  NextDoorE320M@NextDoor
+endmap
+
+map BagpitE320M1
+ BagpitE320S1@Bagpit
+ BagpitE320S2@Bagpit
+ BagpitE320S3@Bagpit
+ #BagpitE320S4@Bagpit
+ #MemoryLaneE320M@MemoryLane
+ MemoryLaneE320S2@MemoryLane #Maps cannot contain boh maps and Scraps
+break
+ MemoryLaneE320S1@MemoryLane #Maps cannot contain boh maps and Scraps
+endmap
+
+map BagpitE320M2
+ #BagpitE320S3@Bagpit
+  BagpitE320S4@Bagpit
+  SlabChamberE320S1@SlabChamber
+endmap
+
+ 
+  
+
+equate 43@Bagpit 1@SlabChamber
+equate 33@Bagpit 3.4@NextDoor
+equate 20@Bagpit 20@MemoryLane
+
+#input Temp/Bagpit_dig.th #containing survey Temp
+#equate 21 20@Temp
+
+#map BagpitM
+#  SlabChamberM@SlabChamber
+#  BagpitM@Bagpit
+#  NextDoorM@NextDoor
+#endmap
+
+
+#Plan Joins #####################################
+join BagpitSP3@Bagpit MemoryLaneSP1@MemoryLane -smooth off
+join BagpitSP5@Bagpit SlabChamberSP1@SlabChamber -smooth on
+join BagpitSP5@Bagpit NextDoorPS1@NextDoor -smooth on
+
+#Elevation Joins ############################
+join BagpitE320S1@Bagpit MemoryLaneE320S1@MemoryLane
+join BagpitE320S4@Bagpit SlabChamberE320S1@SlabChamber -smooth on
+join BagpitE320S4@Bagpit NextDoorE320S1@NextDoor
+
+endsurvey
+
