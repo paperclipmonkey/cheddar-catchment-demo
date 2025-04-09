@@ -3,7 +3,7 @@
 Data for surveyed caves draining into Cheddar Gorge in Somerset, UK.
 
 ## Drawn surveys
-[Click here for drawn surveys derived from this data.](paperclipmonkey.github.io/cheddar-catchment-demo)
+[Click here for drawn survey derived from this data.](https://paperclipmonkey.github.io/cheddar-catchment-demo/Bagpit.pdf)
 
 ### Aims
 To hold an archive of spelæological data for the use of the UK caving community.
