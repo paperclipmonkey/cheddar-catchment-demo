@@ -1,0 +1,139 @@
+layout a_blocks_BCA
+
+code metapost
+
+initsymbol ("a_blocks_BCA");
+
+def a_blocks_BCA (expr p) =
+ T:=identity;
+% This is probably a better way to impliment the different sided blocks calculates the vertices of polygons
+%for (i = 0; i < n; i++) {
+% printf("%f %f\n",x + r * Math.cos(2 * Math.PI * i / n), y + r * Math.sin(2 * Math.PI * i / n));
+%}
+
+boolean overlap;
+overlap:=
+if known ATTR_overlap: scantokens(ATTR_overlap)
+else: false fi;
+
+% Proportion to the size of separation of centres of the blocks as set out in a rectangular grid
+%FIXME: Really need to check if it is number and not zero in for some cases
+separation:= 
+if known ATTR_separation: scantokens(ATTR_separation)
+else: 0.7 fi;
+
+% Max each point of the base block can be moved. Too big and they can intersect themselves
+block_random:=
+if known ATTR_block_random: scantokens(ATTR_block_random);
+else: 0.7
+fi;
+
+% Rotation from 0 of base block, can be used to set all blocks to the same angle
+base_rotation:=
+if known ATTR_base_rotation: scantokens(ATTR_base_rotation)
+else: 0
+fi;
+
+% Rotation either side of base rotation eg 20 will be plus or minus 10 each side
+
+random_rotation:=
+if known ATTR_random_rotation: scantokens(ATTR_random_rotation)
+else: 360
+fi;
+
+% Minimum multiplier used for the base shape
+
+min_scale_factor:=
+if known ATTR_min_size: scantokens(ATTR_min_size)
+else: 0.7
+fi;
+
+% Added to the minimum multiplier to get the maximum scale
+add_scale_factor:=
+if known ATTR_max_size: scantokens(ATTR_max_size)
+else: 0.6
+fi;
+
+% How much longer the block is than it is wide, before randomising
+aspect:=
+if known ATTR_aspect: scantokens(ATTR_aspect)
+else: 1.5
+fi;
+
+% Max random amount block can be moved from the original grid
+shift_random:=
+if known ATTR_shift_random: scantokens(ATTR_shift_random)
+else: 0.75
+fi;
+
+% Set the propotions of different sided block
+if known ATTR_shapes:
+b_tri:=scantokens substring (0,1) of ATTR_shapes;
+b_quad:=scantokens substring (2,3) of ATTR_shapes;
+b_pent:=scantokens substring (4,5) of ATTR_shapes;
+b_hex:=scantokens substring (6,7) of ATTR_shapes;
+else:
+b_tri:=1;
+b_quad:=3;
+b_pent:=4;
+b_hex:=2;
+fi;
+
+pickup PenC;
+path q, qq; q = bbox p;
+pair outside;
+outside:= ulcorner q + up;
+picture tmp_pic; 
+uu := max(u, (xpart urcorner q - xpart llcorner q)/100, (ypart urcorner q - ypart     llcorner q)/100);
+iu := uu * aspect;
+blocks := b_tri+b_quad + b_pent + b_hex;
+tmp_pic := image(
+   for i = xpart llcorner q step separation * aspect * uu until xpart urcorner q:
+      for j = ypart llcorner q step separation*uu until ypart urcorner q:
+        pick_sides := uniformdeviate(blocks);
+        if pick_sides < b_tri:
+          qq := punked (((.5iu,0)--(-0.25iu,.43uu)--(-.25iu,-0.43uu)--cycle) 
+          randomized (block_random * uu))
+          scaled (uniformdeviate(add_scale_factor)+min_scale_factor)
+         rotated (base_rotation + random_rotation / 2 - uniformdeviate(random_rotation) )
+          shifted ((i,j) randomized (shift_random * uu));
+        elseif pick_sides < b_tri + b_quad:
+                    qq := punked (((0.5iu,0)--(0,0.5uu)--(-0.5iu,0)--(0,-0.5uu)--cycle) 
+          randomized (block_random * uu))
+          scaled (uniformdeviate(add_scale_factor)+min_scale_factor)
+         rotated (base_rotation + random_rotation / 2 - uniformdeviate(random_rotation) )
+          shifted ((i,j) randomized (shift_random * uu));
+         elseif pick_sides < b_tri + b_quad + b_pent:
+                    qq := punked (((0.5iu,0)--(.15iu,0.48uu)--(-0.4iu,0.29uu)--(-0.4iu,-0.29uu)--(0.15iu,-0.48uu)--cycle) 
+          randomized (block_random * uu))
+          scaled (uniformdeviate(add_scale_factor)+min_scale_factor)
+         rotated (base_rotation + random_rotation / 2 - uniformdeviate(random_rotation) )
+          shifted ((i,j) randomized (shift_random * uu));
+          else:
+          qq := punked (((0.5iu,0)--(0.25iu,0.43uu)--(-0.25iu,0.43uu)--(-0.5iu,0)--(-0.25iu,-0.43uu)--(0.25iu,-0.43uu)--cycle) 
+          randomized (block_random * uu))
+          scaled (uniformdeviate(add_scale_factor)+min_scale_factor)
+          rotated (base_rotation + random_rotation / 2 - uniformdeviate(random_rotation) )
+          shifted ((i,j) randomized (shift_random * uu));
+         fi;
+       if not overlap: 
+          forever: % Repeatedly reduces the size of the image, as this is done round zero it also moves it to the zero location, until it fits in the area
+           exitif xpart (p intersectiontimes qq) < 0;
+           qq:= qq scaled (0.99 );
+          endfor;
+        fi
+            if pointinside((i,j),p,outside):
+               thclean qq;
+               thdraw qq;
+             fi;
+      endfor;  
+   endfor;
+);
+ % clip tmp_pic to p; %this appears not to be needed as the pointinside removes any outside the area
+ drawoptions(); % no idea what this does!
+ draw tmp_pic;
+enddef; 
+
+endcode
+
+endlayout

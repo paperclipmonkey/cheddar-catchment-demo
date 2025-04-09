@@ -1,0 +1,16 @@
+encoding  utf-8
+layout s_northarrow_BCA
+
+code metapost
+
+ def s_northarrow_BCA (expr rot) =
+  T:=identity scaled 0.7 rotated -rot;
+  thdraw (-1cm,-2cm)--(0,3cm)--(1cm,-2cm)--(0,0cm)--cycle;
+  thfill (-1cm,-2cm)--(0,3cm)--(0,0cm)--cycle;
+enddef;
+
+    initsymbol("s_northarrow_BCA")
+endcode
+
+endlayout
+

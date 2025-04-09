@@ -1,0 +1,341 @@
+encoding  utf-8
+# Input areas 
+  ########################################
+
+input Areas/a_blocks_BCA.th
+
+
+# Input Lines
+ ########################################
+input Lines/l_u_rail.th
+input Lines/l_wall_debris_CHED.th
+
+
+# Input Points
+ ########################################
+
+# Input Special
+ ########################################
+input Special/s_northarrow_BCA.th
+
+layout symbols
+
+# Copy Areas
+ ########################################
+copy a_blocks_BCA
+
+# Copy Lines
+ ########################################
+copy l_u_rail
+copy l_wall_debris_CHED
+
+# Copy specials
+ ########################################
+copy s_northarrow_BCA
+
+symbol-assign line wall:debris CHED
+
+
+code metapost
+           
+      def a_debris_BCA (expr p) =
+      T:=identity;
+      pickup PenC;
+      path q, qq; q = bbox p;
+      picture tmp_pic; 
+      tmp_pic := image(
+        for i = xpart llcorner q step u/2 until xpart urcorner q:
+         for j = ypart llcorner q step u/2 until ypart urcorner q:
+            qq := punked 
+  (((-.2u,-.2u)--(.2u,-.2u)--(.2u,.2u)--(-.2u,.2u)--cycle) 
+         randomized (u/2))
+               rotated uniformdeviate(360) 
+               shifted ((i,j) randomized u);
+       if xpart (p intersectiontimes qq) < 0:
+        thclean qq;
+        thclean qq;
+        thclean qq;
+        thclean qq;
+        thdraw qq;
+       fi;
+          endfor;  
+        endfor;
+      );
+      clip tmp_pic to p;
+      draw tmp_pic;
+    enddef;
+
+    
+      def a_sand_BCA(expr p) =
+        T:=identity;
+        %  thclean p;
+        pickup PenC;
+        path q; q = bbox p;
+        picture tmp_pic; 
+        tmp_pic := image(
+          for i = xpart llcorner q step .3u until xpart urcorner q:
+            for j = ypart llcorner q step .3u until ypart urcorner q:
+              draw origin shifted ((i,j) randomized 0.2u) withpen PenC;
+            endfor;  
+          endfor;
+        );
+        clip tmp_pic to p;
+        draw tmp_pic;
+      enddef;
+      
+def a_pebbles_BCA (expr p) =
+  T:=identity;
+  pickup PenC;
+  path q, qq; q = bbox p;
+  picture tmp_pic;
+  tmp_pic := image(
+    for i = xpart llcorner q step .5u until xpart urcorner q:
+      for j = ypart llcorner q step .5u until ypart urcorner q:
+        qq := (superellipse((.2u,0),(0,.1u),(-.2u,0),(0,.-.1u),.75))
+%             randomized (u/25)
+             rotated uniformdeviate(360)
+             shifted ((i,j) randomized 0.3u);
+  if xpart (p intersectiontimes qq) < 0:
+    thdraw qq;
+  fi;
+      endfor;
+    endfor;
+  );
+  clip tmp_pic to p;
+  drawoptions();
+  draw tmp_pic;
+enddef;
+      
+      def l_flowstone_BCA (expr P) = 
+  T:=identity;
+  cas := 0;
+  dlzka := arclength P;
+  mojkrok:=adjust_step(dlzka, .25u);
+  pickup PenC;  
+  t1:=0;
+  forever:
+    t2 := arctime (cas + mojkrok) of P;
+    thdraw (point t1 of P){dir (angle(thdir(P,t1)) + 60)} ..
+           {dir (angle(thdir(P,t2)) - 60)}(point t2 of P);
+    cas := cas + mojkrok;
+    exitif cas > dlzka + (mojkrok / 3); % for rounding errors
+    t1:=t2;
+  endfor;
+enddef;
+
+def l_overhang_BCA (expr P) =
+# taken from: def l_ceilingstep_SKBB (expr P) =
+  T:=identity;
+  cas := 0;
+  dlzka := arclength P;
+  #controls the length
+  mojkrok:=adjust_step(dlzka, 0.3u);
+  pickup PenC;
+  forever:
+    t1 := arctime (cas + mojkrok*1/5) of P;
+    t  := arctime (cas + mojkrok/2) of P;
+    t2 := arctime (cas + mojkrok*4/5) of P;
+    thdraw (subpath (t1,t2) of P);
+    #controls the lengthof the tick
+    mark_ (P,t,0.15u);
+    cas := cas + mojkrok;
+    exitif cas > dlzka - (2*mojkrok/3); % for rounding errors
+  endfor;
+enddef;
+
+ def l_pit_BCA (expr P) = 
+  T:=identity;
+  cas := 0;
+  dlzka := arclength P;
+  mojkrok:=adjust_step(dlzka, 0.1u);
+  pickup PenD;  
+  forever:
+    t := arctime cas of P;
+    mark_ (P,t,0.1u);
+    cas := cas + mojkrok;
+    exitif cas > dlzka + (mojkrok / 3); % for rounding errors
+  endfor;
+  pickup PenC;  
+  thdraw P;
+enddef; 
+
+
+
+initsymbol ("l_flowstone_BCA");
+initsymbol ("l_pit_BCA");
+initsymbol ("l_overhang_BCA");
+
+    initsymbol ("a_sand_BCA");
+    initsymbol ("a_debris_BCA");
+    initsymbol ("a_pebbles_BCA");
+    
+def l_wall_blocks_CHED (expr P) = 
+
+  T:=identity;
+  pickup PenC;
+  laenge := arclength P;
+  path block;
+  path old_block;
+  cur := 0;
+  #draw first block
+  old_block := punked (( (.65u,-.15u)--(.72u,0.05u)--(.55u,.15u)--(.23u,.17u)--(.0u,.03u)--(.05u,-.1u))randomized (0.1u))
+             scaled (uniformdeviate(0.3)+.65);
+  block_width := (xpart urcorner old_block - xpart ulcorner old_block);
+  t:= arctime (cur+block_width/2) of P;
+  old_block:=old_block rotated angle( direction t of P) shifted point 0 of P;
+  thclean (old_block--cycle);
+  thdraw old_block;
+  cur := cur + block_width + 0.04u;
+  forever:
+    # generate random block
+    block := punked( ((.65u,-.15u)--(.72u,0.05u)--(.55u,.15u)--(.2u,.17u)--(.0u,.03u)--(.05u,-.1u)randomized (0.1u) ))
+          scaled (uniformdeviate(0.3)+.65)
+          rotated (uniformdeviate(20)-10);
+    # check width of block
+    block_width := (xpart urcorner block - xpart ulcorner block);
+    
+    exitif cur > (laenge- 3*block_width/2);
+    # find next position where the block fits in without intersecting the previous one
+    forever:    
+      cur:=cur+0.01u;
+      t:= arctime cur of P;
+      st:= arctime (cur+block_width/2) of P;
+      exitif cur > (laenge- 3*block_width/2);
+      exitif xpart ( ((block--cycle) rotated angle(direction st of P) shifted point t of P) intersectiontimes old_block) < 0;
+    endfor;
+    exitif cur > (laenge- 3*block_width/2);
+    
+    old_block:= block rotated angle(direction st of P) shifted point t of P;
+    thclean (old_block--cycle);
+    thdraw old_block;
+ 
+  cur := cur + block_width + 0.04u;
+
+  endfor;
+  
+    # generate last block
+    
+    block := (((.65u,-.15u)--(.72u,0.05u)--(.55u,.15u)--(.2u,.17u)--(.0u,.03u)--(.05u,-.1u)) );
+    block_width := (xpart urcorner block - xpart ulcorner block);
+
+    # scale last block to fit in the remaining gap
+    scale_factor:=(laenge-cur)/block_width;
+      t:= arctime cur of P;
+      st:= arctime (laenge+cur)/2 of P;
+    forever:
+    exitif scale_factor < 0;
+      exitif xpart ( ( (block) rotated angle (direction st of P) scaled scale_factor shifted (point t of P) ) intersectiontimes old_block) < 0;
+      scale_factor:=scale_factor-0.001;
+    endfor;
+    if scale_factor > 0:
+      thclean (block--cycle) rotated angle (direction st of P) scaled scale_factor shifted (point t of P);
+      thdraw (block) rotated angle (direction st of P) scaled scale_factor shifted (point t of P);
+    fi;
+enddef;
+
+    initsymbol ("l_wall_blocks_CHED");
+
+#derived from def l_pit_UIS (expr P) =     
+    def l_floorstep_BCA (expr P) = 
+  T:=identity;
+  cas := 0;
+  dlzka := arclength P;
+ # Step leangth changed from 0.25
+  mojkrok:=adjust_step(dlzka, 0.12u);
+  pickup PenD;  
+  forever:
+    t := arctime cas of P;
+ #length of tck shorted pit was 0.2
+    mark_ (P,t,0.1u);
+    cas := cas + mojkrok;
+    exitif cas > dlzka + (mojkrok / 3); % for rounding errors
+  endfor;
+  pickup PenC;  
+  thdraw P;
+enddef;
+
+    initsymbol ("l_floorstep_BCA");
+ 
+symbol-colour point water-flow [30 80 100]
+
+# define water to be light blue
+  def a_water (expr p) =
+    T:=identity;
+#nice light blue - but nearly same as level colour - change back when we have control of that
+#    thfill p withcolor (0.48, 0.84, 1.0);
+    thfill p withcolor (0.3, 0.8, 1.0);
+    enddef;
+    
+# define sump to be dark blue
+  def a_sump (expr p) =
+    T:=identity;
+    thfill p withcolor (0.05, 0.0, 0.7);
+  enddef;  
+
+
+code metapost
+  let p_gradient = p_entrance_UIS;
+#replaces the UIS gradient symbol with the entrance symbol that looks like 
+#BCRA gradient symbol
+ let l_chimney = l_overhang_BCA;
+
+
+# define dashed line for surface surveys
+  def l_survey_surface (expr P) =
+    T:=identity;
+    pickup PenD scaled 0.2;
+    thdraw P withcolor (0.8,0.8,0.8);
+  enddef;
+  def l_survey_cave (expr P) =
+    T:=identity;
+    pickup PenD scaled 0.2;
+    thdraw P;
+  enddef;  
+  
+#Change the scale bar to black and transparent bar, split into 5 and labelled
+
+    def s_scalebar (expr l, units, txt) =
+    begingroup
+      interim warningcheck:=0;
+      tmpl:=l / Scale * cm * units / 2;
+      tmpx:=l / Scale * cm * units / 5;
+      tmph:=5bp; % bar height
+    endgroup;
+    pickup PenC;
+#Adjusted to make lines not stick out: 0.25*u/10,0 is half thickness of PenC
+    draw (-tmpl+0.25*u/10,0)--(tmpl-0.25*u/10,0);
+    draw (tmpl-0.25*u/10,-tmph)--(-tmpl+0.25*u/10,-tmph);
+    p:=(0,0)--(tmpx,0)--(tmpx,-tmph)--(0,-tmph)--cycle;
+    for i:=-2.5 step 2 until 2:
+      fill p shifted (i * tmpx,0);
+
+    endfor;
+    begingroup
+      interim labeloffset:=3.5bp;
+      for i:=0 step (l/5) until (l-1):
+        tmpx:=tmpl * (i * 2 / l - 1);
+        label.top(thTEX(decimal (i)),(tmpx,0));
+      endfor;
+      label.top(thTEX(decimal (l) & "\thinspace" & txt),(tmpl,0));
+%      label.bot(thTEX("Original Scale = 1 : " & decimal (Scale*100)),(0,-tmph));
+    endgroup;
+  enddef;
+
+    
+endcode
+
+    symbol-assign area blocks BCA
+    symbol-assign area debris BCA
+    symbol-assign area sand BCA
+    symbol-assign area pebbles BCA
+    
+    symbol-assign line flowstone BCA
+    symbol-assign line overhang BCA
+    symbol-assign line pit BCA
+    symbol-assign line wall:blocks CHED
+    symbol-assign line floor-step BCA
+    
+   symbol-assign special north-arrow BCA
+
+endlayout
+

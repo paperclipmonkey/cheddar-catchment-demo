@@ -1,0 +1,36 @@
+encoding  utf-8
+layout l_u_rail
+
+code metapost
+def l_u_rail (expr P) = 
+  T:=identity;
+  cas := 0;
+  dlzka := arclength P;
+  mojkrok:=adjust_step(dlzka, 0.8u);
+  pickup PenC;
+  forever:
+    t0 := arctime (cas) of P;
+    t1 := arctime (cas + mojkrok*2/5) of P;
+    t  := arctime (cas + mojkrok/2) of P;
+    t4 := arctime (cas + mojkrok*3/5) of P;
+    t5 := arctime (cas + mojkrok) of P;
+    thdraw (subpath (t0,t1) of P);
+    thdraw (subpath (t4,t5) of P);
+    drawdot
+       (point t of P);
+    #mark_ (P,t,0.02u);
+    #mark_ (P,t,-0.02u);
+     #f := (P,t,0.2u);
+     #draw f;
+    cas := cas + mojkrok;
+    exitif cas > dlzka - (2*mojkrok/3); % for rounding errors
+  endfor;
+enddef;
+
+
+initsymbol("l_u_rail")
+#text en line u:rail "Railing"
+endcode
+
+endlayout
+

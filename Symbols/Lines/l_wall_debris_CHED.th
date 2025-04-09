@@ -1,0 +1,93 @@
+encoding  utf-8
+layout l_wall_debris_CHED
+
+#This is a modificatino of the l_wall_debris_AUT to remove the large block at the end
+#by making the end decision 2 block widths from the end
+code metapost
+
+def l_wall_debris_CHED (expr P) =
+  T:=identity;
+  pickup PenC;
+  laenge := arclength P;
+  path block;
+  path old_block;
+
+  cur := 0;
+  t:= arctime cur of P;
+  % draw first block
+  old_block := (((-.0u,-.0u)--(.25u,-.15u)--(.45u,0.01u)--(.2u,.25u)--(.05u,.15u)--cycle));
+  block_width := (xpart urcorner old_block - xpart ulcorner old_block);
+  old_block:=old_block rotated angle(thdir(P,0)) shifted point t of P;
+  thclean old_block;
+  thdraw old_block;
+
+  cur := cur + 0.9*block_width;
+  t:= arctime cur of P;
+  
+    % proceed with path
+    forever:
+    % generate random block
+        block := punked (((-.25u,-.25u)--(0.25.u,-.25u)--(0.50u,0.01u)--(0.25u,.25u)--(-.25u,.25u)--cycle)
+          randomized (u/4))
+          scaled (uniformdeviate(0.3)+.4)
+          rotated uniformdeviate(360);
+    % check width of block
+        block_width := (xpart urcorner block - xpart ulcorner block);
+        exitif cur > (laenge- 1.8*block_width);
+
+        % find next position where the block fits in without intersecting the previous one
+       forever:
+            exitif xpart ( (block rotated angle(-direction t of P) shifted point t of P) intersectiontimes old_block) < 0;
+            cur:=cur+0.01u;
+            t:= arctime cur of P;
+            exitif cur > (laenge- 1.8*block_width);
+       endfor;
+
+        exitif cur > (laenge- 1.8*block_width);
+        old_block:= block rotated angle(-direction t of P) shifted point t of P;
+        thclean old_block;
+        thdraw old_block;
+        cur := cur + block_width/2;
+        t:= arctime cur of P;
+    endfor;
+
+%if the remaining distance is greater than 1.3xblock_width
+  if cur < (laenge -1.3*block_width):
+       forever:
+            exitif xpart ( (block rotated angle(-direction t of P) shifted point t of P) intersectiontimes old_block) < 0;
+            cur:=cur+0.01u;
+            t:= arctime cur of P;
+          %exitif cur > (laenge- 2*block_width);
+       endfor;
+        old_block:= block rotated angle(-direction t of P) shifted point t of P;
+        thclean old_block;
+        thdraw old_block;
+        cur := cur + block_width/2;
+  fi;
+
+    
+      t:= arctime laenge-eps of P;
+      
+  % generate last block
+      block := (((-.0u,-.0u)--(.25u,-.15u)--(.45u,0.01u)--(.2u,.25u)--(.1u,.15u)--cycle));
+     block_width := (xpart urcorner block - xpart ulcorner block);
+
+  % scale last block to fit in the remaining gap
+     scale_factor:=1.5*(laenge-cur)/block_width;
+     forever:
+           exitif scale_factor < 0;  % bruces stab at preventing endless loop at large scales
+           exitif xpart ( (block rotated angle(-direction t of P) scaled scale_factor shifted (point t of P)) intersectiontimes old_block) < 0;
+           scale_factor:=scale_factor-0.01;
+     endfor;
+     if scale_factor > 0:
+       thclean block rotated angle(-direction t of P) scaled scale_factor shifted (point t of P);
+       thdraw block rotated angle(-direction t of P) scaled scale_factor shifted (point t of P);
+     fi;
+enddef;
+
+initsymbol ("l_wall_debris_CHED")
+
+endcode
+
+endlayout
+
