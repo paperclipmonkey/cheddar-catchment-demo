@@ -6,22 +6,30 @@ on:
       - main
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Build assets using Therion Docker container
-        run: |
-          # Run the Docker container to build assets
-          docker run --rm -v "${{ github.workspace }}:/project" ghcr.io/paperclipmonkey/therion:latest Bagpit/thconfig
-        # ...assumes the container outputs assets to /data/output...
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./project/Bagpit/output
+        - name: Checkout repository
+          uses: actions/checkout@v3
+        - name: Build assets using Therion Docker container
+          run: |
+                # Run the Docker container to build assets
+                docker run --rm -v "${{ github.workspace }}:/project" ghcr.io/paperclipmonkey/therion:latest Bagpit/thconfig
+        - name: Setup Pages
+          uses: actions/configure-pages@v5
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v3
+          with:
+            # Upload Bagpit assets
+            path: 'Bagpit/output'
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v4
