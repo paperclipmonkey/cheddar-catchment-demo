@@ -1,0 +1,27 @@
+name: Build and Deploy Assets
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build assets using Therion Docker container
+        run: |
+          # Run the Docker container to build assets
+          docker run --rm -v "${{ github.workspace }}:/data" ghcr.io/paperclipmonkey/therion:latest /data
+        # ...assumes the container outputs assets to /data/output...
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output
