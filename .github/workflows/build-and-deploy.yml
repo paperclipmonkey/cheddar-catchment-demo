@@ -17,7 +17,7 @@ jobs:
       - name: Build assets using Therion Docker container
         run: |
           # Run the Docker container to build assets
-          docker run --rm -v "${{ github.workspace }}:/data" ghcr.io/paperclipmonkey/therion:latest /data
+          docker run --rm -v "${{ github.workspace }}:/data" ghcr.io/paperclipmonkey/therion:latest /data/Bagpit/thconfig
         # ...assumes the container outputs assets to /data/output...
 
       - name: Deploy to GitHub Pages
